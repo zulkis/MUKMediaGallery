@@ -4,7 +4,7 @@
 #import "MUKMediaGallerySlider.h"
 #import <MUKToolkit/MUK+String.h>
 
-static CGFloat const kToolbarHeight = 44.0f;
+static CGFloat const kToolbarHeight = 60.0f;
 
 @interface MUKMediaCarouselPlayerControlsView () <UIToolbarDelegate>
 @property (nonatomic, weak) MPMoviePlayerController *moviePlayerController;
@@ -27,6 +27,7 @@ static CGFloat const kToolbarHeight = 44.0f;
         self.backgroundColor = [UIColor clearColor];
 
         _moviePlayerController = moviePlayerController;
+        _moviePlayerController.view.backgroundColor = [UIColor whiteColor];
         
         UIView *backgroundView = [self newBackgroundViewInSuperview:self];
         _backgroundView = backgroundView;
@@ -95,10 +96,10 @@ static CGFloat const kToolbarHeight = 44.0f;
     [button addTarget:self action:@selector(playPauseButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     [superview addSubview:button];
     
-    CGSize const kMaxButtonSize = CGSizeMake(19.0f, 23.0f);
+    CGSize const kMaxButtonSize = CGSizeMake(29.0f, kToolbarHeight);
     
     NSDictionary *const viewsDict = NSDictionaryOfVariableBindings(button);    
-    NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-(10)-[button(==w)]" options:0 metrics:@{ @"w" : @(kMaxButtonSize.width) } views:viewsDict];
+    NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-[button(==w)]" options:0 metrics:@{ @"w" : @(kMaxButtonSize.width) } views:viewsDict];
     [superview addConstraints:constraints];
     
     NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem:button attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeCenterY multiplier:1.0f constant:0.0f];
@@ -316,6 +317,9 @@ static CGFloat const kToolbarHeight = 44.0f;
 - (void)managePlaybackProgressUpdateTimerForMoviePlayerController:(MPMoviePlayerController *)moviePlayerController
 {
     if ([self isPausedMoviePlayerController:moviePlayerController]) {
+        
+        [self showPlaybackTimeAndDurationForMoviePlayerController:self.moviePlayerController];
+        [self showSliderProgressForMoviePlayerController:self.moviePlayerController];
         [self stopPlaybackProgressUpdateTimer];
     }
     else {

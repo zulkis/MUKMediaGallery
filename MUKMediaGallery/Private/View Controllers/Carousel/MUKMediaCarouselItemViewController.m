@@ -7,14 +7,28 @@ static CGFloat const kCaptionLabelLateralPadding = 8.0f;
 static CGFloat const kCaptionLabelBottomPadding = 5.0f;
 static CGFloat const kCaptionLabelTopPadding = 3.0f;
 
-@interface MUKMediaCarouselItemViewController () <UIToolbarDelegate>
-@property (nonatomic, weak, readwrite) UIView *overlayView;
+@implementation MUKOverlayView
+
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+    for (UIView *view in self.clearTouchViewInOverlay) {
+        if (CGRectContainsPoint(view.frame, point)) {
+            return NO;
+        }
+    }
+    return [super pointInside:point withEvent:event];
+}
+
+@end
+
+@interface MUKMediaCarouselItemViewController () <UIToolbarDelegate, UIGestureRecognizerDelegate>
+@property (nonatomic, weak, readwrite) MUKOverlayView *overlayView;
 @property (nonatomic, weak, readwrite) UIActivityIndicatorView *activityIndicatorView;
 @property (nonatomic, weak, readwrite) UILabel *captionLabel;
 @property (nonatomic, weak, readwrite) UIView *captionBackgroundView;
+@property (nonatomic, weak, readwrite) UIView *controlsView;
 @property (nonatomic, weak, readwrite) UIImageView *thumbnailImageView;
 
-@property (nonatomic, strong) NSLayoutConstraint *captionLabelBottomConstraint, *captionLabelTopConstraint, *captionBackgroundViewBottomConstraint, *captionBackgroundViewTopConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *captionLabelBottomConstraint, *captionLabelTopConstraint, *captionBackgroundViewBottomConstraint, *captionBackgroundViewTopConstraint, *controlsViewTopConstraint, *controlsViewBottomConstraint, *captionBackgroundHeightConstraint;
 @end
 
 @implementation MUKMediaCarouselItemViewController
@@ -35,11 +49,14 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    UIView *overlayView = [self newOverlayViewInSuperview:self.view];
+    MUKOverlayView *overlayView = [self newOverlayViewInSuperview:self.view];
     self.overlayView = overlayView;
     
     UIActivityIndicatorView *activityIndicatorView = [self newCenteredActivityIndicatorViewInSuperview:overlayView];
     self.activityIndicatorView = activityIndicatorView;
+    
+    UIView *controlsView = [self newBottomAttachedControlsViewInSuperview:overlayView];
+    self.controlsView = controlsView;
     
     UILabel *captionLabel = [self newBottomAttachedCaptionLabelInSuperview:overlayView];
     self.captionLabel = captionLabel;
@@ -47,9 +64,18 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
     UIView *captionBackgroundView = [self newBottomAttachedBackgroundViewForCaptionLabel:captionLabel inSuperview:overlayView];
     self.captionBackgroundView = captionBackgroundView;
     
+    
     [self updateCaptionConstraintsWhenHidden:NO];
     [self registerToContentSizeCategoryNotifications];
     [self attachTapGestureRecognizer];
+}
+
+- (void)onCaptionButtonTap:(UIButton *)sender {
+    [self.delegate carouselItemViewControllerWantsEditCaption:self];
+}
+
+- (void)onDeleteButtonTap:(UIButton *)sender {
+    [self.delegate carouselItemViewControllerWantsDeleteItem:self];
 }
 
 #pragma mark - Caption
@@ -62,37 +88,11 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
 {
     NSTimeInterval const duration = animated ? UINavigationControllerHideShowBarDuration : 0.0;
     
-    if (hidden) {
-        [UIView animateWithDuration:duration animations:^{
-            self.captionLabel.alpha = 0.0f;
-            self.captionBackgroundView.alpha = 0.0f;
-        } completion:^(BOOL finished) {
-            if (finished) {
-                [self updateCaptionConstraintsWhenHidden:hidden];
-                
-                // Animate constraints change too, if requested
-                [UIView animateWithDuration:duration animations:^{
-                    [self.view layoutIfNeeded];
-                } completion:nil];
-            }
-            
-            // Notify completion immediately, because caption has already
-            // disappeared
-            if (completionHandler) {
-                completionHandler(finished);
-            }
-        }];
-    }
-    else {
-        self.captionLabel.alpha = 1.0f;
-        self.captionBackgroundView.alpha = 1.0f;
-        
-        [self updateCaptionConstraintsWhenHidden:hidden];
-        
-        [UIView animateWithDuration:duration animations:^{
-            [self.view layoutIfNeeded];
-        } completion:completionHandler];
-    }
+    [self updateCaptionConstraintsWhenHidden:hidden];
+    
+    [UIView animateWithDuration:duration animations:^{
+        [self.view layoutIfNeeded];
+    } completion:completionHandler];
 }
 
 #pragma mark - Thumbnail
@@ -122,10 +122,10 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
 
 #pragma mark - Private
 
-- (UIView *)newOverlayViewInSuperview:(UIView *)superview {
-    UIView *overlayView = [[UIView alloc] initWithFrame:superview.bounds];
+- (MUKOverlayView *)newOverlayViewInSuperview:(UIView *)superview {
+    MUKOverlayView *overlayView = [[MUKOverlayView alloc] initWithFrame:superview.bounds];
     overlayView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    overlayView.userInteractionEnabled = NO;
+    overlayView.userInteractionEnabled = YES;
     overlayView.backgroundColor = [UIColor clearColor];
     [superview addSubview:overlayView];
     return overlayView;
@@ -144,6 +144,71 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
     return activityIndicatorView;
 }
 
+- (UIView *)newBottomAttachedControlsViewInSuperview:(UIView *)superview {
+    const CGFloat controlsHeight = 60.f;
+    
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0,
+                                                            0,
+                                                            CGRectGetWidth(superview.frame),
+                                                            controlsHeight)];
+    view.translatesAutoresizingMaskIntoConstraints = NO;
+    view.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.96f]; //#F5F5F5
+    [superview addSubview:view];
+    
+    
+    UIImage *captionImage =[MUKMediaGalleryUtils imageNamed:@"carouselItem_caption"];
+    UIImage *deleteImage = [MUKMediaGalleryUtils imageNamed:@"carouselItem_delete"];
+    
+    UIButton *captionButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, captionImage.size.width, captionImage.size.height)];
+    captionButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [captionButton setImage:captionImage forState:UIControlStateNormal];
+    captionButton.showsTouchWhenHighlighted = YES;
+    [captionButton addTarget:self action:@selector(onCaptionButtonTap:) forControlEvents:UIControlEventTouchUpInside];
+    
+    UIButton *deleteButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, deleteImage.size.width, deleteImage.size.height)];
+    deleteButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [deleteButton setImage:deleteImage forState:UIControlStateNormal];
+    deleteButton.showsTouchWhenHighlighted = YES;
+    [deleteButton addTarget:self action:@selector(onDeleteButtonTap:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+    [view addSubview:captionButton];
+    [view addSubview:deleteButton];
+    
+    NSDictionary *viewsDict = NSDictionaryOfVariableBindings(view, captionButton, deleteButton);
+    // Our controls view width must be == to superview width
+    NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-(0)-[view]-(0)-|" options:0 metrics:nil views:viewsDict];
+    [superview addConstraints:constraints];
+    
+    constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[view(==controlsHeight)]" options:0 metrics:@{ @"controlsHeight" : @(controlsHeight) } views:viewsDict];
+    [superview addConstraints:constraints];
+    
+    constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-[captionButton(>=0)]-[deleteButton(==captionButton)]-|"
+                                                          options:0
+                                                          metrics:nil
+                                                            views:viewsDict];
+    [view addConstraints:constraints];
+    
+    constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[captionButton(==view)]|"
+                                                          options:0
+                                                          metrics:nil
+                                                            views:viewsDict];
+    [view addConstraints:constraints];
+    
+    constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[deleteButton(==view)]|"
+                                                          options:0
+                                                          metrics:nil
+                                                            views:viewsDict];
+    [view addConstraints:constraints];
+    
+    constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[captionButton(>=0)][deleteButton(==captionButton)]-|"
+                                                          options:0
+                                                          metrics:nil
+                                                            views:viewsDict];
+    
+    return view;
+}
+
 - (UILabel *)newBottomAttachedCaptionLabelInSuperview:(UIView *)superview {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 20.0f, 20.0f)];
     label.userInteractionEnabled = NO;
@@ -154,8 +219,9 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
     label.translatesAutoresizingMaskIntoConstraints = NO;
     [superview addSubview:label];
     
-    NSDictionary *viewsDict = NSDictionaryOfVariableBindings(label);
-    NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-(padding)-[label]-(padding)-|" options:0 metrics:@{@"padding" : @(kCaptionLabelLateralPadding)} views:viewsDict];
+    UIView *controlsView = self.controlsView;
+    NSDictionary *viewsDict = NSDictionaryOfVariableBindings(label, controlsView);
+    NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-(padding)-[label]-(padding)-|" options:0 metrics:@{@"padding" : @(kCaptionLabelLateralPadding)} views:viewsDict];
     [superview addConstraints:constraints];
     
     constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[label(<=maxHeight)]" options:0 metrics:@{ @"maxHeight" : @(kCaptionLabelMaxHeight) } views:viewsDict];
@@ -189,9 +255,6 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
     NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-(0)-[view]-(0)-|" options:0 metrics:nil views:viewsDict];
     [superview addConstraints:constraints];
     
-    NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:label attribute:NSLayoutAttributeHeight multiplier:1.0f constant:kCaptionLabelBottomPadding + kCaptionLabelTopPadding];
-    [superview addConstraint:constraint];
-    
     return view;
 }
 
@@ -201,6 +264,8 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
     UIView *const superview = self.captionLabel.superview;
     
     // Create all constraints
+    
+    
     if (!self.captionLabelTopConstraint) {
         self.captionLabelTopConstraint = [NSLayoutConstraint constraintWithItem:self.captionLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeBottom multiplier:1.0f constant:kCaptionLabelTopPadding];
     }
@@ -209,24 +274,42 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
         self.captionBackgroundViewTopConstraint = [NSLayoutConstraint constraintWithItem:self.captionBackgroundView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeBottom multiplier:1.0f constant:kCaptionLabelTopPadding];
     }
     
+    if (!self.controlsViewTopConstraint) {
+        self.controlsViewTopConstraint = [NSLayoutConstraint constraintWithItem:self.controlsView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeBottom multiplier:1.0f constant:0];
+    }
+    
     if (!self.captionLabelBottomConstraint) {
-        self.captionLabelBottomConstraint = [NSLayoutConstraint constraintWithItem:self.captionLabel attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeBottom multiplier:1.0f constant:-kCaptionLabelBottomPadding];
+        self.captionLabelBottomConstraint = [NSLayoutConstraint constraintWithItem:self.captionLabel attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.controlsView attribute:NSLayoutAttributeTop multiplier:1.0f constant:-kCaptionLabelBottomPadding];
     }
     
     if (!self.captionBackgroundViewBottomConstraint) {
-        self.captionBackgroundViewBottomConstraint = [NSLayoutConstraint constraintWithItem:self.captionBackgroundView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeBottom multiplier:1.0f constant:0.0f];
+        self.captionBackgroundViewBottomConstraint = [NSLayoutConstraint constraintWithItem:self.captionBackgroundView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.controlsView attribute:NSLayoutAttributeTop multiplier:1.0f constant:0.0f];
+    }
+    
+    if (!self.controlsViewBottomConstraint) {
+        self.controlsViewBottomConstraint = [NSLayoutConstraint constraintWithItem:self.controlsView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:superview attribute:NSLayoutAttributeBottom multiplier:1.0f constant:0];
+    }
+    if (!self.captionBackgroundHeightConstraint) {
+        self.captionBackgroundHeightConstraint = [NSLayoutConstraint constraintWithItem:self.captionBackgroundView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:self.captionLabel attribute:NSLayoutAttributeHeight multiplier:1.0f constant:0];
+        [superview addConstraint:self.captionBackgroundHeightConstraint];
+    }
+    
+    if (self.captionLabel.text.length > 0) {
+        self.captionBackgroundHeightConstraint.constant = kCaptionLabelBottomPadding + kCaptionLabelTopPadding;
+    } else {
+        self.captionBackgroundHeightConstraint.constant = 0;
     }
     
     // Change constraints
     NSArray *unusedConstraints, *usedConstraints;
     
     if (hidden) {
-        usedConstraints = @[ self.captionLabelTopConstraint, self.captionBackgroundViewTopConstraint ];
-        unusedConstraints = @[ self.captionLabelBottomConstraint, self.captionBackgroundViewBottomConstraint ];
+        usedConstraints = @[ self.captionLabelTopConstraint, self.captionBackgroundViewTopConstraint, self.controlsViewTopConstraint];
+        unusedConstraints = @[ self.captionLabelBottomConstraint, self.captionBackgroundViewBottomConstraint, self.controlsViewBottomConstraint ];
     }
     else {
-        usedConstraints = @[ self.captionLabelBottomConstraint, self.captionBackgroundViewBottomConstraint ];
-        unusedConstraints = @[ self.captionLabelTopConstraint, self.captionBackgroundViewTopConstraint ];
+        usedConstraints = @[ self.captionLabelBottomConstraint, self.captionBackgroundViewBottomConstraint , self.controlsViewBottomConstraint];
+        unusedConstraints = @[ self.captionLabelTopConstraint, self.captionBackgroundViewTopConstraint, self.controlsViewTopConstraint ];
     }
     
     [superview removeConstraints:unusedConstraints];
@@ -277,7 +360,7 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
 
 - (void)attachTapGestureRecognizer {
     UITapGestureRecognizer *gestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
-    [self.view addGestureRecognizer:gestureRecognizer];
+    [self.overlayView addGestureRecognizer:gestureRecognizer];
 }
 
 - (void)handleTap:(UITapGestureRecognizer *)recognizer {

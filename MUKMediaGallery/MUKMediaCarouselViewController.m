@@ -50,7 +50,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [UIColor whiteColor];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -196,7 +196,7 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
     viewController.view.backgroundColor = self.view.backgroundColor;
     
     viewController.captionLabel.text = attributes.caption;
-    if ([attributes.caption length] && ![self areBarsHidden]) {
+    if (![self areBarsHidden]) {
         [viewController setCaptionHidden:NO animated:NO completion:nil];
     }
     else {
@@ -886,10 +886,7 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
     
     for (MUKMediaCarouselItemViewController *viewController in self.viewControllers)
     {
-        if (hidden || (!hidden && [viewController.captionLabel.text length] > 0))
-        {
-            [viewController setCaptionHidden:hidden animated:animated completion:nil];
-        }
+        [viewController setCaptionHidden:hidden animated:animated completion:nil];
     } // for
 }
 
@@ -984,6 +981,14 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
     }
     
     [self toggleBarsVisibility];
+}
+
+- (void)carouselItemViewControllerWantsEditCaption:(MUKMediaCarouselItemViewController *)viewController {
+    
+}
+
+- (void)carouselItemViewControllerWantsDeleteItem:(MUKMediaCarouselItemViewController *)viewController {
+    
 }
 
 #pragma mark - <MUKMediaCarouselFullImageViewControllerDelegate>

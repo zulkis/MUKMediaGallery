@@ -61,6 +61,8 @@
  */
 - (void)carouselViewController:(MUKMediaCarouselViewController *)viewController cancelLoadingForImageOfKind:(MUKMediaImageKind)imageKind atIndex:(NSInteger)idx;
 
+
+
 @end
 
 

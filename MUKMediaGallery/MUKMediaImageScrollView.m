@@ -39,6 +39,8 @@
     CGSize boundsSize = self.bounds.size;
     CGRect frameToCenter = self.zoomView.frame;
     
+    frameToCenter.size.width = roundf(frameToCenter.size.width);
+    
     // center horizontally
     if (frameToCenter.size.width < boundsSize.width) {
         frameToCenter.origin.x = (boundsSize.width - frameToCenter.size.width) / 2;

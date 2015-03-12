@@ -16,7 +16,11 @@
 @end
 
 // A page of carousel
-@interface MUKMediaCarouselItemViewController : UIViewController
+@interface MUKMediaCarouselItemViewController : UIViewController{
+    @protected
+    NSInteger _mediaIndex;
+}
+
 @property (nonatomic, weak) id<MUKMediaCarouselItemViewControllerDelegate> delegate;
 @property (nonatomic, readonly) NSInteger mediaIndex;
 @property (nonatomic, weak, readonly) MUKOverlayView *overlayView;

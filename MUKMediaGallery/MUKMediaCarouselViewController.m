@@ -116,6 +116,7 @@
 static void CommonInitialization(MUKMediaCarouselViewController *viewController)
 {
     // <UIPageViewControllerDelegate, UIPageViewControllerDataSource>
+    viewController.shouldCacheAttributes = YES;
     viewController.delegate = viewController;
     viewController.dataSource = viewController;
     
@@ -445,7 +446,7 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
 #pragma mark - Private — Media Attributes
 
 - (MUKMediaAttributes *)mediaAttributesForItemAtIndex:(NSInteger)idx {
-    return [self.mediaAttributesCache mediaAttributesAtIndex:idx cacheIfNeeded:YES loadingHandler:^MUKMediaAttributes *
+    return [self.mediaAttributesCache mediaAttributesAtIndex:idx cacheIfNeeded:self.shouldCacheAttributes loadingHandler:^MUKMediaAttributes *
     {
         if ([self.carouselDelegate respondsToSelector:@selector(carouselViewController:attributesForItemAtIndex:)])
         {

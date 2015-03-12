@@ -77,6 +77,7 @@
  */
 @property (nonatomic, weak) id<MUKMediaCarouselViewControllerDelegate> carouselDelegate;
 
+@property (nonatomic) BOOL shouldCacheAttributes;
 /**
  Scrolls the carousel to a media item at given index.
  

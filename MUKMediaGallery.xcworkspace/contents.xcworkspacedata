@@ -5,6 +5,18 @@
       location = "group:MUKMediaGallery"
       name = "MUKMediaGallery">
       <FileRef
+         location = "group:MUKMediaCarouselItemViewController.h">
+      </FileRef>
+      <FileRef
+         location = "group:MUKMediaCarouselItemViewController.m">
+      </FileRef>
+      <FileRef
+         location = "group:MUKMediaCarouselPlayerViewController.h">
+      </FileRef>
+      <FileRef
+         location = "group:MUKMediaCarouselPlayerViewController.m">
+      </FileRef>
+      <FileRef
          location = "group:MUKMediaAttributes.h">
       </FileRef>
       <FileRef
@@ -77,12 +89,6 @@
             <Group
                location = "group:Carousel"
                name = "Carousel">
-               <FileRef
-                  location = "group:MUKMediaCarouselItemViewController.h">
-               </FileRef>
-               <FileRef
-                  location = "group:MUKMediaCarouselItemViewController.m">
-               </FileRef>
                <Group
                   location = "group:Image"
                   name = "Image">
@@ -96,12 +102,6 @@
                <Group
                   location = "group:Video"
                   name = "Video">
-                  <FileRef
-                     location = "group:MUKMediaCarouselPlayerViewController.h">
-                  </FileRef>
-                  <FileRef
-                     location = "group:MUKMediaCarouselPlayerViewController.m">
-                  </FileRef>
                   <FileRef
                      location = "group:MUKMediaCarouselYouTubePlayerViewController.h">
                   </FileRef>

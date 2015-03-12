@@ -107,8 +107,20 @@
     MUKMediaAttributes *attributes = [self mediaAttributesForItemAtIndex:idx];
     [self configureItemViewController:itemViewController forMediaAttributes:attributes];
     
-    // Display view controller
-    [self setViewControllers:@[itemViewController] direction:direction animated:animated completion:completionHandler];
+    
+    __block typeof(self) blocksafeSelf = self;
+    self.view.userInteractionEnabled = NO;
+    NSArray *viewControllers = @[itemViewController];
+    [self setViewControllers:viewControllers direction:direction
+                    animated:animated completion:^(BOOL finished) {
+                        if(finished && animated)
+                        {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [blocksafeSelf setViewControllers:viewControllers direction:direction animated:NO completion:NULL];// bug fix for uipageview controller
+                            });
+                        }
+                        blocksafeSelf.view.userInteractionEnabled = YES;
+                    }];
 }
 
 #pragma mark - Private
@@ -205,15 +217,15 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
     }
     
     // Specific configuration
-    if ([viewController isMemberOfClass:[MUKMediaCarouselFullImageViewController class]])
+    if ([viewController isKindOfClass:[MUKMediaCarouselFullImageViewController class]])
     {
         [self configureFullImageViewController:(MUKMediaCarouselFullImageViewController *)viewController forMediaAttributes:attributes];
     }
-    else if ([viewController isMemberOfClass:[MUKMediaCarouselPlayerViewController class]])
+    else if ([viewController isKindOfClass:[MUKMediaCarouselPlayerViewController class]])
     {
         [self configurePlayerViewController:(MUKMediaCarouselPlayerViewController *)viewController forMediaAttributes:attributes];
     }
-    else if ([viewController isMemberOfClass:[MUKMediaCarouselYouTubePlayerViewController class]])
+    else if ([viewController isKindOfClass:[MUKMediaCarouselYouTubePlayerViewController class]])
     {
         [self configureYouTubePlayerViewController:(MUKMediaCarouselYouTubePlayerViewController *)viewController forMediaAttributes:attributes];
     }
@@ -447,14 +459,14 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
 
 - (MUKMediaAttributes *)mediaAttributesForItemAtIndex:(NSInteger)idx {
     return [self.mediaAttributesCache mediaAttributesAtIndex:idx cacheIfNeeded:self.shouldCacheAttributes loadingHandler:^MUKMediaAttributes *
-    {
-        if ([self.carouselDelegate respondsToSelector:@selector(carouselViewController:attributesForItemAtIndex:)])
-        {
-            return [self.carouselDelegate carouselViewController:self attributesForItemAtIndex:idx];
-        }
-      
-        return nil;
-    }];
+            {
+                if ([self.carouselDelegate respondsToSelector:@selector(carouselViewController:attributesForItemAtIndex:)])
+                {
+                    return [self.carouselDelegate carouselViewController:self attributesForItemAtIndex:idx];
+                }
+                
+                return nil;
+            }];
 }
 
 #pragma mark - Private — Images
@@ -543,7 +555,7 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
     
     // Try to load thumbnail to appeal user eye from cache
     UIImage *thumbnail = [[self cacheForImageKind:MUKMediaImageKindThumbnail] objectAtIndex:idx isNull:NULL];
-
+    
     // Give back thumbnail if it's in memory
     if (thumbnail) {
         if (foundImageKind != NULL) {
@@ -760,10 +772,10 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
     
     __weak MUKMediaCarouselViewController *weakSelf = self;
     id<XCDYouTubeOperation> operation = [[XCDYouTubeClient defaultClient] getVideoWithIdentifier:videoIdentifier completionHandler:^(XCDYouTubeVideo *video, NSError *error)
-    {
-        MUKMediaCarouselViewController *strongSelf = weakSelf;
-        [strongSelf didFinishExtractingYouTubeVideo:video error:error forItemAtIndex:index withYouTubeURL:youTubeURL];
-    }];
+                                         {
+                                             MUKMediaCarouselViewController *strongSelf = weakSelf;
+                                             [strongSelf didFinishExtractingYouTubeVideo:video error:error forItemAtIndex:index withYouTubeURL:youTubeURL];
+                                         }];
     
     self.runningYouTubeExtractors[@(index)] = operation;
 }
@@ -789,7 +801,7 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
         NSString *videoIdentifier = [youTubeURLString substringWithRange:range];
         return videoIdentifier;
     }
-
+    
     return nil;
 }
 

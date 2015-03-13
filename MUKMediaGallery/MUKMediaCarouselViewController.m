@@ -912,6 +912,7 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
 
 - (void)pageViewController:(UIPageViewController *)pageViewController willTransitionToViewControllers:(NSArray *)pendingViewControllers
 {
+    self.view.userInteractionEnabled = NO;
     [self setBarsHidden:YES animated:YES];
     
     // Save pending view controllers
@@ -931,6 +932,7 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
 
 - (void)pageViewController:(UIPageViewController *)pageViewController didFinishAnimating:(BOOL)finished previousViewControllers:(NSArray *)previousViewControllers transitionCompleted:(BOOL)completed
 {
+    self.view.userInteractionEnabled = YES;
     // When view controller disappear, stop loadings
     for (MUKMediaCarouselItemViewController *previousViewController in previousViewControllers)
     {

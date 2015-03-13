@@ -913,7 +913,6 @@ static void CommonInitialization(MUKMediaCarouselViewController *viewController)
 - (void)pageViewController:(UIPageViewController *)pageViewController willTransitionToViewControllers:(NSArray *)pendingViewControllers
 {
     self.view.userInteractionEnabled = NO;
-    [self setBarsHidden:YES animated:YES];
     
     // Save pending view controllers
     self.pendingViewControllers = [pendingViewControllers mutableCopy];

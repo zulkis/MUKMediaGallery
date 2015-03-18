@@ -1,6 +1,8 @@
 #import "MUKMediaCarouselItemViewController.h"
 #import "MUKMediaGalleryToolbar.h"
 #import "MUKMediaGalleryUtils.h"
+#import "UIColor+MUKColor.h"
+#import "UIFont+MUKFont.h"
 
 static CGFloat const kCaptionLabelMaxHeight = 80.0f;
 static CGFloat const kCaptionLabelLateralPadding = 8.0f;
@@ -123,7 +125,7 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
 - (UILabel *)newBottomAttachedCaptionLabelInSuperview:(UIView *)superview {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 20.0f, 20.0f)];
     label.userInteractionEnabled = NO;
-    label.textColor = [UIColor colorWithWhite:74.f/255.f alpha:1.f];
+    label.textColor = [UIColor MUK_textColor];
     label.font = [[self class] defaultCaptionLabelFont];
     label.numberOfLines = 0;
     label.backgroundColor = [UIColor clearColor];
@@ -230,17 +232,7 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
 #pragma mark - Private — Fonts
 
 + (UIFont *)defaultCaptionLabelFont {
-    UIFont *font;
-    
-    if ([[UIFont class] respondsToSelector:@selector(preferredFontForTextStyle:)])
-    {
-        font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-    }
-    else {
-        font = [UIFont systemFontOfSize:12.0f];
-    }
-    
-    return font;
+    return [UIFont MUK_defaultFontWithSize:12.f];;
 }
 
 #pragma mark - Private — Tap Gesture Recognizer

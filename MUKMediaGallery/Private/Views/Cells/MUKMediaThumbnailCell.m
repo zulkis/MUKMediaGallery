@@ -1,5 +1,6 @@
 #import "MUKMediaThumbnailCell.h"
 #import <QuartzCore/QuartzCore.h>
+#import "UIFont+MUKFont.h"
 
 @interface MUKMediaThumbnailCell ()
 @end
@@ -56,7 +57,7 @@
         captionLabel.textColor = [UIColor whiteColor];
         captionLabel.numberOfLines = 1;
         captionLabel.textAlignment = NSTextAlignmentRight;
-        captionLabel.font = [UIFont boldSystemFontOfSize:11.0f];
+        captionLabel.font = [UIFont MUK_defaultFontWithSize:14.f];
         captionLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin|UIViewAutoresizingFlexibleWidth;
         [bottomView addSubview:captionLabel];
         _captionLabel = captionLabel;

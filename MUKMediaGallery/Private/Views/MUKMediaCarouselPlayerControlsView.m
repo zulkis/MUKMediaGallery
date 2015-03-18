@@ -3,6 +3,8 @@
 #import "MUKMediaGalleryUtils.h"
 #import "MUKMediaGallerySlider.h"
 #import <MUKToolkit/MUK+String.h>
+#import "UIColor+MUKColor.h"
+#import "UIFont+MUKFont.h"
 
 static CGFloat const kToolbarHeight = 60.0f;
 
@@ -106,9 +108,8 @@ static CGFloat const kToolbarHeight = 60.0f;
     UIImage *thumbImage = [MUKMediaGalleryUtils imageNamed:@"mediaPlayer_sliderThumb"];
     [slider setThumbImage:thumbImage forState:UIControlStateNormal];
     slider.thumbOffset = CGSizeMake(0.0f, 2.0f);
-    [slider setMaximumTrackTintColor:[UIColor colorWithWhite:189.f/255.f alpha:1.f]];
-    UIColor *color = [UIColor colorWithRed:1.f green:101.f/255.f blue:0.f alpha:1.f];
-    [slider setMinimumTrackTintColor:color];
+    [slider setMaximumTrackTintColor:[UIColor MUK_maximumTrackTintColor]];
+    [slider setMinimumTrackTintColor:[UIColor MUK_minimumTrackTintColor]];
     
     [slider addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
     [slider addTarget:self action:@selector(sliderTouchedDown:) forControlEvents:UIControlEventTouchDown];
@@ -131,8 +132,8 @@ static CGFloat const kToolbarHeight = 60.0f;
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 50.0f, 40.0f)];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.backgroundColor = [UIColor clearColor];
-    label.textColor = [UIColor colorWithWhite:74.f/255.f alpha:1.f];
-    label.font = [UIFont systemFontOfSize:10.0f];
+    label.textColor = [UIColor MUK_textColor];
+    label.font = [UIFont MUK_defaultFontWithSize:10.f];
     [superview addSubview:label];
     
     NSDictionary *const viewsDict = NSDictionaryOfVariableBindings(slider, label);
@@ -202,13 +203,13 @@ static CGFloat const kToolbarHeight = 60.0f;
         string = @"--:--";
     }
     
-    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithWhite:74.f/255.f alpha:1.f] }];
+    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{ NSForegroundColorAttributeName : [UIColor MUK_textColor] }];
     [fullAttributedString appendAttributedString:attributedString];
     
     // Second part: duration
     if (duration > 0.0) {
         string = [@"/" stringByAppendingString:[MUK stringRepresentationOfTimeInterval:duration]];
-        attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithWhite:74.f/255.f alpha:1.f] }];
+        attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{ NSForegroundColorAttributeName : [UIColor MUK_textColor] }];
         [fullAttributedString appendAttributedString:attributedString];
     }
     

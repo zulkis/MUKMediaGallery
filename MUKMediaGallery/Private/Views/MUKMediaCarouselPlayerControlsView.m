@@ -6,7 +6,7 @@
 
 static CGFloat const kToolbarHeight = 60.0f;
 
-@interface MUKMediaCarouselPlayerControlsView () <UIToolbarDelegate>
+@interface MUKMediaCarouselPlayerControlsView ()
 @property (nonatomic, weak) MPMoviePlayerController *moviePlayerController;
 @property (nonatomic, weak) UIView *backgroundView;
 @property (nonatomic, weak) UIButton *playPauseButton;
@@ -25,7 +25,7 @@ static CGFloat const kToolbarHeight = 60.0f;
     if (self) {
         self.translatesAutoresizingMaskIntoConstraints = NO;
         self.backgroundColor = [UIColor clearColor];
-
+        
         _moviePlayerController = moviePlayerController;
         _moviePlayerController.view.backgroundColor = [UIColor whiteColor];
         
@@ -44,7 +44,7 @@ static CGFloat const kToolbarHeight = 60.0f;
         UILabel *timeLabel = [self newTimeLabelInSuperview:self afterSlider:slider];
         _timeLabel = timeLabel;
         [self showPlaybackTimeAndDurationForMoviePlayerController:self.moviePlayerController];
-
+        
         [self registerToMediaPlayerControllerNotifications];
     }
     
@@ -68,24 +68,12 @@ static CGFloat const kToolbarHeight = 60.0f;
 #pragma mark - Private — View Building
 
 - (UIView *)newBackgroundViewInSuperview:(UIView *)superview {
-    UIView *view;
-    if ([MUKMediaGalleryUtils defaultUIParadigm] == MUKMediaGalleryUIParadigmLayered)
-    {
-        // A toolbar gives live blurry effect on iOS 7
-        MUKMediaGalleryToolbar *toolbar = [[MUKMediaGalleryToolbar alloc] initWithFrame:superview.bounds];
-        toolbar.barStyle = UIBarStyleBlack;
-        toolbar.delegate = self;
-        
-        view = toolbar;
-    }
-    else {
-        view = [[UIView alloc] initWithFrame:superview.bounds];
-        view.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.5f];
-    }
+    UIView *view = [[UIView alloc] initWithFrame:superview.bounds];
+    view.backgroundColor = [UIColor whiteColor];
     
     view.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
     [superview addSubview:view];
-
+    
     return view;
 }
 
@@ -98,7 +86,7 @@ static CGFloat const kToolbarHeight = 60.0f;
     
     CGSize const kMaxButtonSize = CGSizeMake(29.0f, kToolbarHeight);
     
-    NSDictionary *const viewsDict = NSDictionaryOfVariableBindings(button);    
+    NSDictionary *const viewsDict = NSDictionaryOfVariableBindings(button);
     NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-[button(==w)]" options:0 metrics:@{ @"w" : @(kMaxButtonSize.width) } views:viewsDict];
     [superview addConstraints:constraints];
     
@@ -118,7 +106,9 @@ static CGFloat const kToolbarHeight = 60.0f;
     UIImage *thumbImage = [MUKMediaGalleryUtils imageNamed:@"mediaPlayer_sliderThumb"];
     [slider setThumbImage:thumbImage forState:UIControlStateNormal];
     slider.thumbOffset = CGSizeMake(0.0f, 2.0f);
-    [slider setMaximumTrackTintColor:[UIColor colorWithWhite:1.0f alpha:0.5f]];
+    [slider setMaximumTrackTintColor:[UIColor colorWithWhite:189.f/255.f alpha:1.f]];
+    UIColor *color = [UIColor colorWithRed:1.f green:101.f/255.f blue:0.f alpha:1.f];
+    [slider setMinimumTrackTintColor:color];
     
     [slider addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
     [slider addTarget:self action:@selector(sliderTouchedDown:) forControlEvents:UIControlEventTouchDown];
@@ -141,7 +131,7 @@ static CGFloat const kToolbarHeight = 60.0f;
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 50.0f, 40.0f)];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.backgroundColor = [UIColor clearColor];
-    label.textColor = [UIColor whiteColor];
+    label.textColor = [UIColor colorWithWhite:74.f/255.f alpha:1.f];
     label.font = [UIFont systemFontOfSize:10.0f];
     [superview addSubview:label];
     
@@ -178,7 +168,7 @@ static CGFloat const kToolbarHeight = 60.0f;
     else {
         icon = [MUKMediaGalleryUtils imageNamed:@"mediaPlayer_play"];
     }
-
+    
     [self.playPauseButton setImage:icon forState:UIControlStateNormal];
 }
 
@@ -212,13 +202,13 @@ static CGFloat const kToolbarHeight = 60.0f;
         string = @"--:--";
     }
     
-    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{ NSForegroundColorAttributeName : [UIColor whiteColor] }];
+    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithWhite:74.f/255.f alpha:1.f] }];
     [fullAttributedString appendAttributedString:attributedString];
     
     // Second part: duration
     if (duration > 0.0) {
         string = [@"/" stringByAppendingString:[MUK stringRepresentationOfTimeInterval:duration]];
-        attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithWhite:1.0f alpha:0.5f] }];
+        attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithWhite:74.f/255.f alpha:1.f] }];
         [fullAttributedString appendAttributedString:attributedString];
     }
     

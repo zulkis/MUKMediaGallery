@@ -9,17 +9,12 @@
 - (void)carouselItemViewControllerWantsDeleteItem:(MUKMediaCarouselItemViewController *)viewController;
 @end
 
-@interface MUKOverlayView : UIView
-
-@property (nonatomic, strong) NSArray *clearTouchViewInOverlay;
-
-@end
-
 // A page of carousel
 @interface MUKMediaCarouselItemViewController : UIViewController
 @property (nonatomic, weak) id<MUKMediaCarouselItemViewControllerDelegate> delegate;
 @property (nonatomic, readonly) NSInteger mediaIndex;
-@property (nonatomic, weak, readonly) MUKOverlayView *overlayView;
+@property (nonatomic) CGFloat captionBottomOffset;
+@property (nonatomic, weak, readonly) UIView *overlayView;
 @property (nonatomic, weak, readonly) UIActivityIndicatorView *activityIndicatorView;
 @property (nonatomic, weak, readonly) UILabel *captionLabel;
 @property (nonatomic, weak, readonly) UIView *captionBackgroundView;

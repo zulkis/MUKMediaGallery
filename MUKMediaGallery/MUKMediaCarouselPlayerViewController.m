@@ -44,7 +44,6 @@
         MUKMediaCarouselPlayerControlsView *controlsView = [[MUKMediaCarouselPlayerControlsView alloc] initWithMoviePlayerController:self.moviePlayerController];
         self.playerControlsView = controlsView;
         [self.moviePlayerController.view addSubview:controlsView];
-        self.overlayView.clearTouchViewInOverlay = @[self.playerControlsView];
         
         NSDictionary *viewsDict = @{
                                     @"controls" : controlsView,

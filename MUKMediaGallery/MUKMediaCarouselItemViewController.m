@@ -5,9 +5,9 @@
 #import "UIFont+MUKFont.h"
 
 static CGFloat const kCaptionLabelMaxHeight = 80.0f;
-static CGFloat const kCaptionLabelLateralPadding = 8.0f;
-static CGFloat const kCaptionLabelBottomPadding = 5.0f;
-static CGFloat const kCaptionLabelTopPadding = 3.0f;
+static CGFloat const kCaptionLabelLateralPadding = 20.0f;
+static CGFloat const kCaptionLabelBottomPadding = 10.0f;
+static CGFloat const kCaptionLabelTopPadding = 6.0f;
 
 
 @interface MUKMediaCarouselItemViewController () <UIGestureRecognizerDelegate>
@@ -232,7 +232,7 @@ static CGFloat const kCaptionLabelTopPadding = 3.0f;
 #pragma mark - Private — Fonts
 
 + (UIFont *)defaultCaptionLabelFont {
-    return [UIFont MUK_defaultFontWithSize:12.f];;
+    return [UIFont MUK_defaultFontWithSize:14.f];;
 }
 
 #pragma mark - Private — Tap Gesture Recognizer

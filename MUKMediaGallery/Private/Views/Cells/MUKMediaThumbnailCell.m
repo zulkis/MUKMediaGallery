@@ -29,7 +29,7 @@
         [self.backgroundView addSubview:imageView];
         _imageView = imageView;
         
-        CGFloat const kBottomViewHeight = 17.0f;
+        CGFloat const kBottomViewHeight = 22.0f;
         rect.origin.y = rect.size.height - kBottomViewHeight;
         rect.size.height = kBottomViewHeight;
         UIView *bottomView = [[UIView alloc] initWithFrame:rect];

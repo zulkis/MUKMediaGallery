@@ -107,9 +107,10 @@ static CGFloat const kToolbarHeight = 60.0f;
     slider.translatesAutoresizingMaskIntoConstraints = NO;
     UIImage *thumbImage = [MUKMediaGalleryUtils imageNamed:@"mediaPlayer_sliderThumb"];
     [slider setThumbImage:thumbImage forState:UIControlStateNormal];
-    slider.thumbOffset = CGSizeMake(0.0f, 2.0f);
-    [slider setMaximumTrackTintColor:[UIColor MUK_maximumTrackTintColor]];
-    [slider setMinimumTrackTintColor:[UIColor MUK_minimumTrackTintColor]];
+    slider.thumbOffset = CGSizeMake(0.0f, 0.0f);
+    [slider setMinimumTrackImage:[[MUKMediaGalleryUtils imageNamed:@"mediaPlayer_sliderMinimumTrack"] resizableImageWithCapInsets:UIEdgeInsetsMake(0, 10, 0, 10)] forState:UIControlStateNormal];
+    [slider setMaximumTrackImage:[[MUKMediaGalleryUtils imageNamed:@"mediaPlayer_sliderMaximumTrack"] resizableImageWithCapInsets:UIEdgeInsetsMake(0, 10, 0, 10)] forState:UIControlStateNormal];
+    
     
     [slider addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
     [slider addTarget:self action:@selector(sliderTouchedDown:) forControlEvents:UIControlEventTouchDown];

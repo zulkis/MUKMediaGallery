@@ -65,11 +65,6 @@ const CGFloat MUKMediaControlsHeight = 60.f;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    if ([MUKMediaGalleryUtils defaultUIParadigm] == MUKMediaGalleryUIParadigmLayered)
-    {
-        self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
-    }
-    
     if (self.shouldReloadDataInViewWillAppear) {
         self.shouldReloadDataInViewWillAppear = NO;
         
